@@ -31,7 +31,8 @@ Invoked on load error with `{nativeEvent: {error}}`.
 
 **onLayout**: function
 
-TODO
+Invoked on mount and layout changes with `{ nativeEvent: { layout: { x, y, width,
+height } } }`, where `x` and `y` are the offsets from the parent node.
 
 **onLoad**: function
 
@@ -45,7 +46,7 @@ Invoked when load either succeeds or fails,
 
 Invoked on load start.
 
-**resizeMode**: oneOf('contain', 'cover', 'none', 'stretch') = 'stretch'
+**resizeMode**: oneOf('center', 'contain', 'cover', 'none', 'repeat', 'stretch') = 'stretch'
 
 Determines how to resize the image when the frame doesn't match the raw image
 dimensions.
@@ -57,26 +58,29 @@ could be an http address or a base64 encoded image.
 
 **style**: style
 
-+ ...[View#style](View.md)
-
-Defaults:
-
-```js
-{
-  alignSelf: 'flex-start',
-  backgroundColor: 'transparent'
-}
-```
++ ...[View#style](./View.md)
++ `resizeMode`
 
 **testID**: string
 
 Used to locate a view in end-to-end tests.
 
+## Properties
+
+static **resizeMode**: Object
+
+Example usage:
+
+```
+<Image resizeMode={Image.resizeMode.contain} />
+```
+
 ## Examples
 
 ```js
 import placeholderAvatar from './placeholderAvatar.png'
-import React, { Component, Image, PropTypes, StyleSheet } from 'react-native-web'
+import React, { Component } from 'react'
+import { Image, PropTypes, StyleSheet } from 'react-native'
 
 export default class ImageExample extends Component {
   constructor(props, context) {
@@ -110,11 +114,11 @@ export default class ImageExample extends Component {
         onLoad={this._onLoad.bind(this)}
         resizeMode='cover'
         source={{ uri: user.avatarUrl }}
-        style={{
-          ...styles.base,
-          ...styles[size],
-          ...loadingStyle
-        }}
+        style={[
+          styles.base,
+          styles[size],
+          loadingStyle
+        ]}
       />
     )
   }

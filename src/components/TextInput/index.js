@@ -1,50 +1,20 @@
-import { pickProps } from '../../modules/filterObjectProps'
-import CoreComponent from '../CoreComponent'
-import React, { PropTypes } from 'react'
+import applyNativeMethods from '../../modules/applyNativeMethods'
+import createReactDOMComponent from '../../modules/createReactDOMComponent'
+import omit from 'lodash/omit'
+import pick from 'lodash/pick'
+import React, { Component, PropTypes } from 'react'
 import ReactDOM from 'react-dom'
-import StyleSheet from '../../modules/StyleSheet'
+import StyleSheet from '../../apis/StyleSheet'
 import Text from '../Text'
 import TextareaAutosize from 'react-textarea-autosize'
-import TextInputStylePropTypes from './TextInputStylePropTypes'
+import TextInputState from './TextInputState'
+import UIManager from '../../apis/UIManager'
 import View from '../View'
+import ViewStylePropTypes from '../View/ViewStylePropTypes'
 
-const textInputStyleKeys = Object.keys(TextInputStylePropTypes)
+const viewStyleProps = Object.keys(ViewStylePropTypes)
 
-const styles = StyleSheet.create({
-  initial: {
-    ...View.defaultProps.style,
-    borderColor: 'black',
-    borderWidth: 1
-  },
-  input: {
-    appearance: 'none',
-    backgroundColor: 'transparent',
-    borderWidth: 0,
-    boxSizing: 'border-box',
-    color: 'inherit',
-    flexGrow: 1,
-    font: 'inherit',
-    padding: 0,
-    zIndex: 1
-  },
-  placeholder: {
-    bottom: 0,
-    color: 'darkgray',
-    left: 0,
-    overflow: 'hidden',
-    position: 'absolute',
-    right: 0,
-    top: 0,
-    whiteSpace: 'pre'
-  }
-})
-
-class TextInput extends React.Component {
-  constructor(props, context) {
-    super(props, context)
-    this.state = { showPlaceholder: !props.value && !props.defaultValue }
-  }
-
+class TextInput extends Component {
   static propTypes = {
     ...View.propTypes,
     autoComplete: PropTypes.bool,
@@ -66,12 +36,10 @@ class TextInput extends React.Component {
     placeholderTextColor: PropTypes.string,
     secureTextEntry: PropTypes.bool,
     selectTextOnFocus: PropTypes.bool,
-    style: PropTypes.shape(TextInputStylePropTypes),
-    testID: CoreComponent.propTypes.testID,
+    style: Text.propTypes.style,
+    testID: Text.propTypes.testID,
     value: PropTypes.string
-  }
-
-  static stylePropTypes = TextInputStylePropTypes
+  };
 
   static defaultProps = {
     editable: true,
@@ -79,51 +47,33 @@ class TextInput extends React.Component {
     multiline: false,
     numberOfLines: 2,
     secureTextEntry: false,
-    style: styles.initial
+    style: {}
+  };
+
+  constructor(props, context) {
+    super(props, context)
+    this.state = { showPlaceholder: !props.value && !props.defaultValue }
   }
 
-  _onBlur(e) {
-    const { onBlur } = this.props
-    const value = e.target.value
-    this.setState({ showPlaceholder: value === '' })
-    if (onBlur) onBlur(e)
+  blur() {
+    TextInputState.blurTextInput(ReactDOM.findDOMNode(this.refs.input))
   }
 
-  _onChange(e) {
-    const { onChange, onChangeText } = this.props
-    const value = e.target.value
-    this.setState({ showPlaceholder: value === '' })
-    if (onChangeText) onChangeText(value)
-    if (onChange) onChange(e)
+  clear() {
+    this.setNativeProps({ text: '' })
   }
 
-  _onFocus(e) {
-    const { clearTextOnFocus, onFocus, selectTextOnFocus } = this.props
-    const node = ReactDOM.findDOMNode(this.refs.input)
-    const value = e.target.value
-    if (clearTextOnFocus) node.value = ''
-    if (selectTextOnFocus) node.select()
-    this.setState({ showPlaceholder: value === '' })
-    if (onFocus) onFocus(e)
+  focus() {
+    TextInputState.focusTextInput(ReactDOM.findDOMNode(this.refs.input))
   }
 
-  _onSelectionChange(e) {
-    const { onSelectionChange } = this.props
-    const { selectionDirection, selectionEnd, selectionStart } = e.target
-    const event = {
-      selectionDirection,
-      selectionEnd,
-      selectionStart,
-      nativeEvent: e.nativeEvent
-    }
-    if (onSelectionChange) onSelectionChange(event)
+  setNativeProps(props) {
+    UIManager.updateView(this.refs.input, props, this)
   }
 
   render() {
     const {
-      /* eslint-disable react/prop-types */
-      accessibilityLabel,
-      /* eslint-enable react/prop-types */
+      accessibilityLabel, // eslint-disable-line
       autoComplete,
       autoFocus,
       defaultValue,
@@ -133,6 +83,7 @@ class TextInput extends React.Component {
       maxNumberOfLines,
       multiline,
       numberOfLines,
+      onLayout,
       onSelectionChange,
       placeholder,
       placeholderTextColor,
@@ -142,7 +93,6 @@ class TextInput extends React.Component {
       value
     } = this.props
 
-    const resolvedStyle = pickProps(style, textInputStyleKeys)
     let type
 
     switch (keyboardType) {
@@ -168,17 +118,24 @@ class TextInput extends React.Component {
       type = 'password'
     }
 
+    // In order to support 'Text' styles on 'TextInput', we split the 'Text'
+    // and 'View' styles and apply them to the 'Text' and 'View' components
+    // used in the implementation
+    const flattenedStyle = StyleSheet.flatten(style)
+    const rootStyles = pick(flattenedStyle, viewStyleProps)
+    const textStyles = omit(flattenedStyle, viewStyleProps)
+
     const propsCommon = {
       autoComplete: autoComplete && 'on',
       autoFocus,
       defaultValue,
       maxLength,
-      onBlur: this._onBlur.bind(this),
-      onChange: this._onChange.bind(this),
-      onFocus: this._onFocus.bind(this),
-      onSelect: onSelectionChange && this._onSelectionChange.bind(this),
+      onBlur: this._handleBlur,
+      onChange: this._handleChange,
+      onFocus: this._handleFocus,
+      onSelect: onSelectionChange && this._handleSelectionChange,
       readOnly: !editable,
-      style: { ...styles.input, outline: style.outline },
+      style: [ styles.input, textStyles, { outline: style.outline } ],
       value
     }
 
@@ -197,29 +154,119 @@ class TextInput extends React.Component {
 
     const props = multiline ? propsMultiline : propsSingleline
 
+    const optionalPlaceholder = placeholder && this.state.showPlaceholder && (
+      <View pointerEvents='none' style={styles.placeholder}>
+        <Text
+          children={placeholder}
+          style={[
+            styles.placeholderText,
+            textStyles,
+            placeholderTextColor && { color: placeholderTextColor }
+          ]}
+        />
+      </View>
+    )
+
     return (
-      <CoreComponent
+      <View
         accessibilityLabel={accessibilityLabel}
-        className='TextInput'
-        style={{
-          ...styles.initial,
-          ...resolvedStyle
-        }}
+        onClick={this._handleClick}
+        onLayout={onLayout}
+        style={[ styles.initial, rootStyles ]}
         testID={testID}
       >
-        <View style={{ flexGrow: 1 }}>
-          <CoreComponent {...props} ref='input' />
-          {placeholder && this.state.showPlaceholder && <Text
-            pointerEvents='none'
-            style={{
-              ...styles.placeholder,
-              ...(placeholderTextColor && { color: placeholderTextColor })
-            }}
-          >{placeholder}</Text>}
+        <View style={styles.wrapper}>
+          {createReactDOMComponent({ ...props, ref: 'input' })}
+          {optionalPlaceholder}
         </View>
-      </CoreComponent>
+      </View>
     )
+  }
+
+  _handleBlur = (e) => {
+    const { onBlur } = this.props
+    const text = e.target.value
+    this.setState({ showPlaceholder: text === '' })
+    this.blur()
+    if (onBlur) onBlur(e)
+  }
+
+  _handleChange = (e) => {
+    const { onChange, onChangeText } = this.props
+    const text = e.target.value
+    this.setState({ showPlaceholder: text === '' })
+    if (onChange) onChange(e)
+    if (onChangeText) onChangeText(text)
+    if (!this.refs.input) {
+      // calling `this.props.onChange` or `this.props.onChangeText`
+      // may clean up the input itself. Exits here.
+      return
+    }
+  }
+
+  _handleClick = (e) => {
+    this.focus()
+  }
+
+  _handleFocus = (e) => {
+    const { clearTextOnFocus, onFocus, selectTextOnFocus } = this.props
+    const node = ReactDOM.findDOMNode(this.refs.input)
+    const text = e.target.value
+    if (onFocus) onFocus(e)
+    if (clearTextOnFocus) this.clear()
+    if (selectTextOnFocus) node.select()
+    this.setState({ showPlaceholder: text === '' })
+  }
+
+  _handleSelectionChange = (e) => {
+    const { onSelectionChange } = this.props
+    try {
+      const { selectionDirection, selectionEnd, selectionStart } = e.target
+      const event = {
+        selectionDirection,
+        selectionEnd,
+        selectionStart,
+        nativeEvent: e.nativeEvent
+      }
+      if (onSelectionChange) onSelectionChange(event)
+    } catch (e) {}
   }
 }
 
-export default TextInput
+applyNativeMethods(TextInput)
+
+const styles = StyleSheet.create({
+  initial: {
+    borderColor: 'black'
+  },
+  wrapper: {
+    flex: 1
+  },
+  input: {
+    appearance: 'none',
+    backgroundColor: 'transparent',
+    borderWidth: 0,
+    boxSizing: 'border-box',
+    color: 'inherit',
+    flex: 1,
+    font: 'inherit',
+    minHeight: '100%', // center small inputs (fix #139)
+    padding: 0,
+    zIndex: 1
+  },
+  placeholder: {
+    bottom: 0,
+    justifyContent: 'center',
+    left: 0,
+    position: 'absolute',
+    right: 0,
+    top: 0
+  },
+  placeholderText: {
+    color: 'darkgray',
+    overflow: 'hidden',
+    whiteSpace: 'pre'
+  }
+})
+
+module.exports = TextInput

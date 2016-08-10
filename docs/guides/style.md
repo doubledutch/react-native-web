@@ -1,8 +1,7 @@
 # Style
 
-React Native for Web relies on JavaScript to let you style your application.
-Along with a novel JS-to-CSS conversion strategy, this allows you to avoid
-issues arising from the [7 deadly sins of
+React Native for Web relies on JavaScript to define styles for your
+application. This allows you to avoid issues arising from the [7 deadly sins of
 CSS](https://speakerdeck.com/vjeux/react-css-in-js):
 
 1. Global namespace
@@ -33,16 +32,16 @@ const styles = StyleSheet.create({
 ```
 
 Using `StyleSheet.create` is optional but provides some key advantages: styles
-are immutable in development, styles are converted to CSS rather than applied
-as inline styles, and styles are only created once for the application and not
-on every render.
+are immutable in development, certain declarations are automatically converted
+to CSS rather than applied as inline styles, and styles are only created once
+for the application and not on every render.
 
 The attribute names and values are a subset of CSS. See the `style`
 documentation of individual components.
 
 ## Using styles
 
-All the core components accept a `style` attribute.
+All the React Native components accept a `style` attribute.
 
 ```js
 <Text style={styles.text} />
@@ -52,6 +51,13 @@ All the core components accept a `style` attribute.
 A common pattern is to conditionally add style based on a condition:
 
 ```js
+// either
+<View style={[
+  styles.base,
+  this.state.active && styles.active
+]} />
+
+// or
 <View style={{
   ...styles.base,
   ...(this.state.active && styles.active)
@@ -62,10 +68,10 @@ A common pattern is to conditionally add style based on a condition:
 
 In order to let a call site customize the style of your component children, you
 can pass styles around. Use `View.propTypes.style` and `Text.propTypes.style` in
-order to make sure only styles are being passed.
+order to make sure only valid styles are being passed.
 
 ```js
-export default class List extends React.Component {
+class List extends React.Component {
   static propTypes = {
     style: View.propTypes.style,
     elementStyle: View.propTypes.style,
@@ -75,7 +81,7 @@ export default class List extends React.Component {
     return (
       <View style={this.props.style}>
         {elements.map((element) =>
-          <View style={{ ...styles.element, this.props.elementStyle }} />
+          <View style={[ styles.element, this.props.elementStyle ]} />
         )}
       </View>
     );
@@ -108,11 +114,11 @@ class List extends React.Component {
     return (
       <View
         children={children}
-        style={{
-          ...this.props.style,
+        style={[
+          this.props.style,
           // override border-color when scrolling
-          ...(isScrolling && { borderColor: 'transparent' })
-       }}
+          isScrolling && { borderColor: 'transparent' }
+        ]}
       />
     )
   }
@@ -125,61 +131,16 @@ class List extends React.Component {
 it does not concern itself with _where_ or _when_ those styles are applied to
 elements.
 
-Changing styles in response to device adaptation can be controlled using
-JavaScript Media Query API's. There are several React libraries that provide a
-means to do this, e.g.,
+There are various React libraries wrapping JavaScript Media Query API's, e.g.,
 [react-media-queries](https://github.com/bloodyowl/react-media-queries),
 [media-query-fascade](https://github.com/tanem/media-query-facade), or
-[react-responsive](https://github.com/contra/react-responsive). This approach
-has the benefit of co-locating breakpoint-specific DOM and style changes.
+[react-responsive](https://github.com/contra/react-responsive). This has the
+benefit of co-locating breakpoint-specific DOM and style changes.
 
 ## Pseudo-classes and pseudo-elements
 
-Pseudo-classes like `:hover` and `:focus` can be implemented with the `onHover`
-and `onFocus` events. Pseudo-elements are not supported; elements should be
-used instead.
-
-## How it works
-
-Every call to `StyleSheet.create` extracts the unique _declarations_ and
-converts them to a unique CSS rule. This is sometimes referred to as "atomic
-CSS". All the core components map their `style` property-value pairs to the
-corresponding `className`'s.
-
-By doing this, the total size of the generated CSS is determined by the
-total number of unique declarations (rather than the total number of rules in
-the application), making it viable to inline the style sheet when pre-rendering
-on the server.
-
-JavaScript definition:
-
-```js
-const styles = StyleSheet.create({
-  heading: {
-    color: 'gray',
-    fontSize: '2rem'
-  },
-  text: {
-    color: 'gray',
-    fontSize: '1.25rem'
-  }
-})
-```
-
-CSS output:
-
-```css
-._s1 { color: gray; }
-._s2 { font-size: 2rem; }
-._s3 { font-size: 1.25rem; }
-```
-
-Rendered HTML:
-
-```html
-<span className="_s1 _s2">Heading</span>
-<span className="_s1 _s3">Text</span>
-```
+Pseudo-classes like `:hover` and `:focus` can be implemented with events (e.g.
+`onFocus`). Pseudo-elements are not supported; elements should be used instead.
 
 ### Reset
 
@@ -189,32 +150,3 @@ You **do not** need to include a CSS reset or
 React Native for Web includes a very small CSS reset taken from normalize.css.
 It removes unwanted User Agent styles from (pseudo-)elements beyond the reach
 of React (e.g., `html`, `body`) or inline styles (e.g., `::-moz-focus-inner`).
-
-```css
-html {
-  font-family: sans-serif;
-  -ms-text-size-adjust: 100%;
-  -webkit-text-size-adjust: 100%;
-}
-
-body {
-  margin: 0;
-}
-
-button::-moz-focus-inner,
-input::-moz-focus-inner {
-  border: 0;
-  padding: 0;
-}
-
-input[type="search"]::-webkit-search-cancel-button,
-input[type="search"]::-webkit-search-decoration {
-  -webkit-appearance: none;
-}
-
-ol,
-ul,
-li {
-  list-style:none
-}
-```

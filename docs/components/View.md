@@ -4,21 +4,13 @@
 style, layout with flexbox, and accessibility controls. It can be nested
 inside another `View` and has 0-to-many children of any type.
 
+Also, refer to React Native's documentation about the [Gesture Responder
+System](http://facebook.github.io/react-native/releases/0.22/docs/gesture-responder-system.html).
+
 Unsupported React Native props:
-`accessibilityComponentType` (android) – use `accessibilityRole`,
-`accessibilityTraits` (ios) – use `accessibilityRole`,
-`collapsable` (android),
-`importantForAccessibility` (android),
-`needsOffscreenAlphaCompositing` (android),
 `onAccessibilityTap`,
-`onMagicTap`,
-`onMoveShouldSetResponder`,
-`onResponder*`,
-`onStartShouldSetResponder`,
-`onStartShouldSetResponderCapture`
-`removeClippedSubviews` (ios),
-`renderToHardwareTextureAndroid` (android),
-`shouldRasterizeIOS` (ios)
+`hitSlop`,
+`onMagicTap`
 
 ## Props
 
@@ -56,7 +48,31 @@ implemented using `aria-hidden`.)
 
 **onLayout**: function
 
-(TODO)
+Invoked on mount and layout changes with `{ nativeEvent: { layout: { x, y, width,
+height } } }`, where `x` and `y` are the offsets from the parent node.
+
+**onMoveShouldSetResponder**: function
+
+**onMoveShouldSetResponderCapture**: function
+
+**onResponderGrant**: function
+
+For most touch interactions, you'll simply want to wrap your component in
+`TouchableHighlight` or `TouchableOpacity`.
+
+**onResponderMove**: function
+
+**onResponderReject**: function
+
+**onResponderRelease**: function
+
+**onResponderTerminate**: function
+
+**onResponderTerminationRequest**: function
+
+**onStartShouldSetResponder**: function
+
+**onStartShouldSetResponderCapture**: function
 
 **pointerEvents**: oneOf('auto', 'box-only', 'box-none', 'none') = 'auto'
 
@@ -136,6 +152,7 @@ from `style`.
 + `right`
 + `top`
 + `transform`
++ `transformMatrix`
 + `userSelect`
 + `visibility`
 + `width`
@@ -168,7 +185,8 @@ Used to locate this view in end-to-end tests.
 ## Examples
 
 ```js
-import React, { Component, PropTypes, StyleSheet, View } from 'react-native-web'
+import React, { Component, PropTypes } from 'react'
+import { StyleSheet, View } from 'react-native'
 
 export default class ViewExample extends Component {
   render() {

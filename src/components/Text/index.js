@@ -1,10 +1,61 @@
-import { pickProps } from '../../modules/filterObjectProps'
-import CoreComponent from '../CoreComponent'
-import React, { PropTypes } from 'react'
-import StyleSheet from '../../modules/StyleSheet'
+import applyLayout from '../../modules/applyLayout'
+import applyNativeMethods from '../../modules/applyNativeMethods'
+import createReactDOMComponent from '../../modules/createReactDOMComponent'
+import { Component, PropTypes } from 'react'
+import StyleSheet from '../../apis/StyleSheet'
+import StyleSheetPropType from '../../propTypes/StyleSheetPropType'
 import TextStylePropTypes from './TextStylePropTypes'
 
-const textStyleKeys = Object.keys(TextStylePropTypes)
+class Text extends Component {
+  static displayName = 'Text'
+
+  static propTypes = {
+    accessibilityLabel: createReactDOMComponent.propTypes.accessibilityLabel,
+    accessibilityRole: PropTypes.oneOf([ 'heading', 'link' ]),
+    accessible: createReactDOMComponent.propTypes.accessible,
+    children: PropTypes.any,
+    numberOfLines: PropTypes.number,
+    onLayout: PropTypes.func,
+    onPress: PropTypes.func,
+    selectable: PropTypes.bool,
+    style: StyleSheetPropType(TextStylePropTypes),
+    testID: createReactDOMComponent.propTypes.testID
+  };
+
+  static defaultProps = {
+    accessible: true,
+    selectable: true
+  };
+
+  render() {
+    const {
+      numberOfLines,
+      onLayout, // eslint-disable-line
+      onPress, // eslint-disable-line
+      selectable,
+      style,
+      ...other
+    } = this.props
+
+    return createReactDOMComponent({
+      ...other,
+      component: 'span',
+      onClick: this._onPress,
+      style: [
+        styles.initial,
+        style,
+        !selectable && styles.notSelectable,
+        numberOfLines === 1 && styles.singleLineStyle
+      ]
+    })
+  }
+
+  _onPress = (e) => {
+    if (this.props.onPress) this.props.onPress(e)
+  }
+}
+
+applyLayout(applyNativeMethods(Text))
 
 const styles = StyleSheet.create({
   initial: {
@@ -13,8 +64,11 @@ const styles = StyleSheet.create({
     font: 'inherit',
     margin: 0,
     padding: 0,
-    textDecoration: 'none',
+    textDecorationLine: 'none',
     wordWrap: 'break-word'
+  },
+  notSelectable: {
+    userSelect: 'none'
   },
   singleLineStyle: {
     maxWidth: '100%',
@@ -24,57 +78,4 @@ const styles = StyleSheet.create({
   }
 })
 
-class Text extends React.Component {
-  static propTypes = {
-    _className: PropTypes.string, // escape-hatch for code migrations
-    accessibilityLabel: CoreComponent.propTypes.accessibilityLabel,
-    accessibilityRole: CoreComponent.propTypes.accessibilityRole,
-    accessible: CoreComponent.propTypes.accessible,
-    children: PropTypes.any,
-    numberOfLines: PropTypes.number,
-    onPress: PropTypes.func,
-    style: PropTypes.shape(TextStylePropTypes),
-    testID: CoreComponent.propTypes.testID
-  }
-
-  static stylePropTypes = TextStylePropTypes
-
-  static defaultProps = {
-    _className: '',
-    accessible: true,
-    style: styles.initial
-  }
-
-  _onPress(e) {
-    if (this.props.onPress) this.props.onPress(e)
-  }
-
-  render() {
-    const {
-      _className,
-      numberOfLines,
-      onPress,
-      style,
-      ...other
-    } = this.props
-
-    const className = `${_className} Text`.trim()
-    const resolvedStyle = pickProps(style, textStyleKeys)
-
-    return (
-      <CoreComponent
-        {...other}
-        className={className}
-        component='span'
-        onClick={this._onPress.bind(this)}
-        style={{
-          ...styles.initial,
-          ...resolvedStyle,
-          ...(numberOfLines === 1 && styles.singleLineStyle)
-        }}
-      />
-    )
-  }
-}
-
-export default Text
+module.exports = Text

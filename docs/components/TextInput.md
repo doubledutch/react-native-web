@@ -14,16 +14,11 @@ Unsupported React Native props:
 `enablesReturnKeyAutomatically` (ios),
 `returnKeyType` (ios),
 `selectionState` (ios),
-`textAlign` (android),
-`textAlignVertical` (android),
 `underlineColorAndroid` (android)
 
 ## Props
 
-(web) **accessibilityLabel**: string
-
-Defines the text label available to assistive technologies upon interaction
-with the element. (This is implemented using `aria-label`.)
+[...View props](./View.md)
 
 (web) **autoComplete**: bool = false
 
@@ -92,10 +87,6 @@ as an argument to the callback handler.
 
 Callback that is called when the text input is focused.
 
-**onLayout**: function
-
-TODO
-
 (web) **onSelectionChange**: function
 
 Callback that is called when the text input's selection changes. The following
@@ -132,7 +123,7 @@ If `true`, all text will automatically be selected on focus.
 
 **style**: style
 
-+ ...[Text#style](Text.md)
++ ...[Text#style](./Text.md)
 + `outline`
 
 **testID**: string
@@ -147,10 +138,25 @@ Read about how [React form
 components](https://facebook.github.io/react/docs/forms.html) work. To prevent
 user edits to the value set `editable={false}`.
 
+## Instance methods
+
+**blur()**
+
+Blur the underlying DOM input.
+
+**clear()**
+
+Clear the text from the underlying DOM input.
+
+**focus()**
+
+Focus the underlying DOM input.
+
 ## Examples
 
 ```js
-import React, { Component, StyleSheet, TextInput } from 'react-native-web'
+import React, { Component } from 'react'
+import { StyleSheet, TextInput } from 'react-native'
 
 export default class TextInputExample extends Component {
   constructor(props, context) {
@@ -176,10 +182,10 @@ export default class TextInputExample extends Component {
         onBlur={this._onBlur.bind(this)}
         onFocus={this._onFocus.bind(this)}
         placeholder={`What's happening?`}
-        style={{
-          ...styles.default
-          ...(this.state.isFocused && styles.focused)
-        }}
+        style={[
+          styles.default
+          this.state.isFocused && styles.focused
+        ]}
       />
     );
   }

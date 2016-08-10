@@ -1,54 +1,55 @@
 /* eslint-env mocha */
 
-import * as utils from '../../../modules/specHelpers'
 import assert from 'assert'
+import includes from 'lodash/includes'
 import React from 'react'
-
 import View from '../'
+import { mount, shallow } from 'enzyme'
 
 suite('components/View', () => {
-  test('prop "accessibilityLabel"', () => {
-    const accessibilityLabel = 'accessibilityLabel'
-    const result = utils.shallowRender(<View accessibilityLabel={accessibilityLabel} />)
-    assert.equal(result.props.accessibilityLabel, accessibilityLabel)
-  })
+  suite('rendered element', () => {
+    test('is a "div" by default', () => {
+      const view = shallow(<View />)
+      assert.equal(view.is('div'), true)
+    })
 
-  test('prop "accessibilityLiveRegion"', () => {
-    const accessibilityLiveRegion = 'polite'
-    const result = utils.shallowRender(<View accessibilityLiveRegion={accessibilityLiveRegion} />)
-    assert.equal(result.props.accessibilityLiveRegion, accessibilityLiveRegion)
-  })
-
-  test('prop "accessibilityRole"', () => {
-    const accessibilityRole = 'accessibilityRole'
-    const result = utils.shallowRender(<View accessibilityRole={accessibilityRole} />)
-    assert.equal(result.props.accessibilityRole, accessibilityRole)
-  })
-
-  test('prop "accessible"', () => {
-    const accessible = false
-    const result = utils.shallowRender(<View accessible={accessible} />)
-    assert.equal(result.props.accessible, accessible)
+    test('is a "span" when inside <View accessibilityRole="button" />', () => {
+      const view = mount(<View accessibilityRole='button'><View /></View>)
+      assert.equal(view.find('span').length, 1)
+    })
   })
 
   test('prop "children"', () => {
-    const children = 'children'
-    const result = utils.shallowRender(<View>{children}</View>)
-    assert.equal(result.props.children, children)
+    const children = <View testID='1' />
+    const view = shallow(<View>{children}</View>)
+    assert.equal(view.prop('children'), children)
+  })
+
+  test('prop "onLayout"', (done) => {
+    mount(<View onLayout={onLayout} />)
+    function onLayout(e) {
+      const { layout } = e.nativeEvent
+      assert.deepEqual(layout, { x: 0, y: 0, width: 0, height: 0 })
+      done()
+    }
   })
 
   test('prop "pointerEvents"', () => {
-    const result = utils.shallowRender(<View pointerEvents='box-only' />)
-    assert.equal(result.props.style.pointerEvents, 'box-only')
+    const view = shallow(<View pointerEvents='box-only' />)
+    assert.ok(includes(view.prop('className'), '__style_pebo') === true)
   })
 
   test('prop "style"', () => {
-    utils.assertProps.style(View)
-  })
+    const view = shallow(<View />)
+    assert.equal(view.prop('style').flexShrink, 0)
 
-  test('prop "testID"', () => {
-    const testID = 'testID'
-    const result = utils.shallowRender(<View testID={testID} />)
-    assert.equal(result.props.testID, testID)
+    const flexView = shallow(<View style={{ flex: 1 }} />)
+    assert.equal(flexView.prop('style').flexShrink, 1)
+
+    const flexShrinkView = shallow(<View style={{ flexShrink: 1 }} />)
+    assert.equal(flexShrinkView.prop('style').flexShrink, 1)
+
+    const flexAndShrinkView = shallow(<View style={{ flex: 1, flexShrink: 2 }} />)
+    assert.equal(flexAndShrinkView.prop('style').flexShrink, 2)
   })
 })

@@ -4,6 +4,8 @@ TODO
 
 ## Props
 
+[...ScrollView props](./ScrollView.md)
+
 **children**: any
 
 Content to display over the image.
@@ -15,7 +17,8 @@ Content to display over the image.
 ## Examples
 
 ```js
-import React, { Component, ListView, PropTypes } from 'react-native-web'
+import React, { Component, PropTypes } from 'react'
+import { ListView } from 'react-native'
 
 export default class ListViewExample extends Component {
   static propTypes = {}

@@ -1,64 +1,94 @@
-import React from 'react'
+import './modules/injectResponderEventPlugin'
+
+import findNodeHandle from './modules/findNodeHandle'
 import ReactDOM from 'react-dom'
 import ReactDOMServer from 'react-dom/server'
 
-// api
-import StyleSheet from './modules/StyleSheet'
+// apis
+import Animated from './apis/Animated'
+import AppRegistry from './apis/AppRegistry'
+import AppState from './apis/AppState'
+import AsyncStorage from './apis/AsyncStorage'
+import Dimensions from './apis/Dimensions'
+import Easing from 'animated/lib/Easing'
+import InteractionManager from './apis/InteractionManager'
+import NetInfo from './apis/NetInfo'
+import PanResponder from './apis/PanResponder'
+import PixelRatio from './apis/PixelRatio'
+import Platform from './apis/Platform'
+import StyleSheet from './apis/StyleSheet'
+import UIManager from './apis/UIManager'
+import Vibration from './apis/Vibration'
 
 // components
+import ActivityIndicator from './components/ActivityIndicator'
 import Image from './components/Image'
 import ListView from './components/ListView'
 import ScrollView from './components/ScrollView'
 import Text from './components/Text'
 import TextInput from './components/TextInput'
-import Touchable from './components/Touchable'
+import Touchable from './components/Touchable/Touchable'
+import TouchableBounce from './components/Touchable/TouchableBounce'
+import TouchableHighlight from './components/Touchable/TouchableHighlight'
+import TouchableOpacity from './components/Touchable/TouchableOpacity'
+import TouchableWithoutFeedback from './components/Touchable/TouchableWithoutFeedback'
 import View from './components/View'
 
-const renderStyle = () => {
-  return `<style id='react-stylesheet'>${StyleSheet._renderToString()}</style>`
-}
+// modules
+import NativeModules from './modules/NativeModules'
 
-const render = (element, container, callback) => {
-  const styleElement = document.getElementById('react-stylesheet')
-  if (!styleElement) {
-    const style = renderStyle()
-    container.insertAdjacentHTML('beforebegin', style)
-  }
-  return ReactDOM.render(element, container, callback)
-}
+// propTypes
 
-const renderToString = (element) => {
-  const style = renderStyle()
-  const html = ReactDOMServer.renderToString(element)
-  return `${style}\n${html}`
-}
-
-const renderToStaticMarkup = (element) => {
-  const style = renderStyle()
-  const html = ReactDOMServer.renderToStaticMarkup(element)
-  return `${style}\n${html}`
-}
+import ColorPropType from './propTypes/ColorPropType'
+import EdgeInsetsPropType from './propTypes/EdgeInsetsPropType'
+import PointPropType from './propTypes/PointPropType'
 
 const ReactNative = {
+  // top-level API
+  findNodeHandle,
+  render: ReactDOM.render,
+  unmountComponentAtNode: ReactDOM.unmountComponentAtNode,
+  // web-only
+  renderToStaticMarkup: ReactDOMServer.renderToStaticMarkup,
+  renderToString: ReactDOMServer.renderToString,
+
   // apis
+  Animated,
+  AppRegistry,
+  AppState,
+  AsyncStorage,
+  Dimensions,
+  Easing,
+  InteractionManager,
+  NetInfo,
+  PanResponder,
+  PixelRatio,
+  Platform,
   StyleSheet,
+  UIManager,
+  Vibration,
 
   // components
+  ActivityIndicator,
   Image,
   ListView,
   ScrollView,
   Text,
   TextInput,
   Touchable,
+  TouchableBounce,
+  TouchableHighlight,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
   View,
 
-  // React
-  ...React,
-  ...ReactDOM,
-  ...ReactDOMServer,
-  render,
-  renderToString,
-  renderToStaticMarkup
+  // modules
+  NativeModules,
+
+  // propTypes
+  ColorPropType,
+  EdgeInsetsPropType,
+  PointPropType
 }
 
 module.exports = ReactNative

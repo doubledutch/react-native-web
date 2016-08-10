@@ -1,55 +1,41 @@
 /* eslint-env mocha */
 
-import * as utils from '../../../modules/specHelpers'
 import assert from 'assert'
 import React from 'react'
-import ReactTestUtils from 'react-addons-test-utils'
-
 import Text from '../'
+import { mount, shallow } from 'enzyme'
 
 suite('components/Text', () => {
-  test('prop "accessibilityLabel"', () => {
-    const accessibilityLabel = 'accessibilityLabel'
-    const result = utils.shallowRender(<Text accessibilityLabel={accessibilityLabel} />)
-    assert.equal(result.props.accessibilityLabel, accessibilityLabel)
-  })
-
-  test('prop "accessibilityRole"', () => {
-    const accessibilityRole = 'accessibilityRole'
-    const result = utils.shallowRender(<Text accessibilityRole={accessibilityRole} />)
-    assert.equal(result.props.accessibilityRole, accessibilityRole)
-  })
-
-  test('prop "accessible"', () => {
-    const accessible = false
-    const result = utils.shallowRender(<Text accessible={accessible} />)
-    assert.equal(result.props.accessible, accessible)
-  })
-
   test('prop "children"', () => {
     const children = 'children'
-    const result = utils.shallowRender(<Text>{children}</Text>)
-    assert.equal(result.props.children, children)
+    const text = shallow(<Text>{children}</Text>)
+    assert.equal(text.prop('children'), children)
   })
 
   test('prop "numberOfLines"')
 
+  test('prop "onLayout"', (done) => {
+    mount(<Text onLayout={onLayout} />)
+    function onLayout(e) {
+      const { layout } = e.nativeEvent
+      assert.deepEqual(layout, { x: 0, y: 0, width: 0, height: 0 })
+      done()
+    }
+  })
+
   test('prop "onPress"', (done) => {
-    const dom = utils.renderToDOM(<Text onPress={onPress} />)
-    ReactTestUtils.Simulate.click(dom)
+    const text = mount(<Text onPress={onPress} />)
+    text.simulate('click')
     function onPress(e) {
       assert.ok(e.nativeEvent)
       done()
     }
   })
 
-  test('prop "style"', () => {
-    utils.assertProps.style(Text)
-  })
-
-  test('prop "testID"', () => {
-    const testID = 'testID'
-    const result = utils.shallowRender(<Text testID={testID} />)
-    assert.equal(result.props.testID, testID)
+  test('prop "selectable"', () => {
+    let text = shallow(<Text />)
+    assert.equal(text.prop('style').userSelect, undefined)
+    text = shallow(<Text selectable={false} />)
+    assert.equal(text.prop('style').userSelect, 'none')
   })
 })
