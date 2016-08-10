@@ -47,7 +47,7 @@ class Text extends Component {
         !selectable && styles.notSelectable,
         numberOfLines === 1 && styles.singleLineStyle,
         numberOfLines > 1 && styles.multiLineStyle,
-        numberOfLines > 1 && { '-webkit-line-clamp': numberOfLines}
+        numberOfLines > 1 && {WebkitLineClamp: '' + numberOfLines}
       ]
     })
   }
@@ -81,7 +81,7 @@ const styles = StyleSheet.create({
   multiLineStyle: {
     overflow: 'hidden',
     display: '-webkit-box',
-    '-webkit-box-orient': 'vertical'
+    WebkitBoxOrient: 'vertical'
   }
 })
 

@@ -28,5 +28,7 @@ module.exports = {
   whiteSpace: string,
   /* @platform web */
   wordWrap: string,
-  writingDirection: oneOf([ 'auto', 'ltr', 'rtl' ])
+  writingDirection: oneOf([ 'auto', 'ltr', 'rtl' ]),
+  WebkitLineClamp: string,
+  WebkitBoxOrient: oneOf([ 'vertical', 'horizontal' ])
 }
