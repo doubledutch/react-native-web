@@ -11,6 +11,7 @@ import AppState from './apis/AppState'
 import AsyncStorage from './apis/AsyncStorage'
 import Dimensions from './apis/Dimensions'
 import Easing from 'animated/lib/Easing'
+import I18nManager from './apis/I18nManager'
 import InteractionManager from './apis/InteractionManager'
 import NetInfo from './apis/NetInfo'
 import PanResponder from './apis/PanResponder'
@@ -25,6 +26,7 @@ import ActivityIndicator from './components/ActivityIndicator'
 import Image from './components/Image'
 import ListView from './components/ListView'
 import ScrollView from './components/ScrollView'
+import Switch from './components/Switch'
 import Text from './components/Text'
 import TextInput from './components/TextInput'
 import Touchable from './components/Touchable/Touchable'
@@ -59,12 +61,14 @@ const ReactNative = {
   AsyncStorage,
   Dimensions,
   Easing,
+  I18nManager,
   InteractionManager,
   NetInfo,
   PanResponder,
   PixelRatio,
   Platform,
   StyleSheet,
+  Switch,
   UIManager,
   Vibration,
 
